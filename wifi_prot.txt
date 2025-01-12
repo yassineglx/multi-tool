@@ -1,0 +1,30 @@
+# Check for administrative privileges
+if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+    Write-Host "Please run this script as Administrator." -ForegroundColor Red
+    exit
+}
+
+# Set the network interface to monitor
+Write-Host "Detecting available network interfaces..."
+tshark -D
+$interface = Read-Host "Enter the number of the wireless interface to monitor (from the list above)"
+
+# Validate interface selection
+if ([string]::IsNullOrWhiteSpace($interface)) {
+    Write-Host "No interface selected. Exiting." -ForegroundColor Red
+    exit
+}
+
+# Start monitoring for deauthentication packets
+Write-Host "Monitoring Wi-Fi traffic for deauthentication packets on interface $interface..."
+Write-Host "Press Ctrl+C to stop monitoring." -ForegroundColor Yellow
+
+# Run TShark to filter deauthentication packets
+Start-Process -NoNewWindow -Wait -FilePath "tshark.exe" -ArgumentList "-i $interface -Y 'wlan.fc.type_subtype == 12' -T fields -e wlan.sa -e wlan.da -e frame.time"
+
+# Explanation of TShark command:
+# - "-i $interface": Specifies the interface to monitor.
+# - "-Y 'wlan.fc.type_subtype == 12'": Filters for deauthentication packets.
+# - "-T fields -e wlan.sa -e wlan.da -e frame.time": Outputs the source MAC, destination MAC, and timestamp.
+
+Write-Host "Monitoring stopped."

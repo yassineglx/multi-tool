@@ -172,7 +172,8 @@ echo [92m[1] Detect Deauthentication Packets[0m
 echo [92m[2] Mitigate Rogue Devices[0m
 echo [92m[3] Advanced ARP Spoofing Detection (e.g., SelfishNet)[0m
 echo [92m[4] Advanced Bandwidth Monitoring[0m
-echo [92m[5] Return to Main Menu[0m
+echo [92m[5] Automatically Block Rogue Devices[0m
+echo [92m[6] Return to Main Menu[0m
 echo.
 set /p "wifi_option=Select an option: "
 
@@ -193,7 +194,6 @@ if "%wifi_option%"=="1" (
 :: Mitigate Rogue Devices
 if "%wifi_option%"=="2" (
     cls
-    echo Mitigating rogue devices...
     echo Checking for unauthorized devices...
     arp -a | findstr /V "00-00-00-00-00-00" > rogue_devices.txt
     echo Rogue devices logged in rogue_devices.txt.
@@ -208,7 +208,6 @@ if "%wifi_option%"=="2" (
 if "%wifi_option%"=="3" (
     cls
     echo Detecting ARP spoofing attacks (e.g., SelfishNet)...
-    echo Scanning for duplicate MAC addresses...
     powershell -Command ^
     "arp -a | Out-File -FilePath arp_table.txt; ^
     $arpData = Get-Content arp_table.txt | ForEach-Object { ($_ -split '\s+') | Select-String '.{17}' }; ^
@@ -234,4 +233,20 @@ if "%wifi_option%"=="4" (
     goto wifi_detection_mitigation
 )
 
-if "%wifi_option%"=="5" goto start
+:: Automatically Block Rogue Devices
+if "%wifi_option%"=="5" (
+    cls
+    echo Blocking rogue devices...
+    echo Parsing rogue_devices.txt for unauthorized MACs...
+    for /F "tokens=1,2,3 delims= " %%A in (rogue_devices.txt) do (
+        echo Blocking MAC: %%B...
+        powershell -Command ^
+        "Start-Process -NoNewWindow -Wait -FilePath 'snmpset.exe' -ArgumentList ' -v2c -c private your_router_ip oid_block_command %%B'; ^
+        Add-Content -Path 'block_log.txt' -Value ('Blocked MAC: %%B - Timestamp: ' + (Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))"
+    )
+    echo Rogue devices have been blocked and logged in block_log.txt.
+    pause
+    goto wifi_detection_mitigation
+)
+
+if "%wifi_option%"=="6" goto start

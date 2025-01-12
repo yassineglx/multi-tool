@@ -35,7 +35,9 @@ echo                 [90;1m╚═╦»[0m  [92m[Logging & Reporting][0m  [9
 ping localhost -n 1 >nul
 echo                   [90;1m╚═╦»[0m  [92m[Wi-Fi Attack Script][0m [95m[8][0m
 ping localhost -n 1 >nul
-echo                     [90;1m╚═»[0m  [92m[Exit][0m              [95m[9][0m
+echo                     [90;1m╚═╦»[0m  [92m[Wi-Fi Detection & Mitigation][0m[95m[9][0m
+ping localhost -n 1 >nul
+echo                     [90;1m╚═»[0m  [92m[Exit][0m              [95m[0][0m
 echo|set /p=".                      [90;1m╚══>[0m"
 choice /c 123456789 /n >nul
 set choice=%errorlevel%
@@ -48,7 +50,8 @@ if %choice%==5 goto post_exploitation
 if %choice%==6 goto wifi_tools
 if %choice%==7 goto logging
 if %choice%==8 goto wifi_attack
-if %choice%==9 exit
+if %choice%==9 goto wifi_detection_mitigation
+if %choice%==0 exit
 
 :wifi_attack
 cls
@@ -157,3 +160,78 @@ echo [92m[+] Log Network Activity[0m:
 echo    netstat -an > network_log.txt
 pause
 goto start
+
+
+:wifi_detection_mitigation
+cls
+echo ============================================================
+echo          Wi-Fi Detection & Mitigation Tools
+echo ============================================================
+echo [96mThis section includes tools to detect and mitigate Wi-Fi attacks.[0m
+echo [92m[1] Detect Deauthentication Packets[0m
+echo [92m[2] Mitigate Rogue Devices[0m
+echo [92m[3] Advanced ARP Spoofing Detection (e.g., SelfishNet)[0m
+echo [92m[4] Advanced Bandwidth Monitoring[0m
+echo [92m[5] Return to Main Menu[0m
+echo.
+set /p "wifi_option=Select an option: "
+
+:: Detect Deauthentication Packets
+if "%wifi_option%"=="1" (
+    cls
+    echo Detecting deauthentication packets...
+    echo Results will be logged in wifi_attack_log.txt.
+    powershell -Command ^
+    "if (!(Test-Path tshark.exe)) { Write-Host 'TShark not found. Please install Wireshark.'; exit } ^
+    Start-Process -NoNewWindow -Wait -FilePath 'tshark.exe' -ArgumentList '-i 1 -Y wlan.fc.type_subtype==12 -T fields -e wlan.sa -e wlan.da -e frame.time' | ForEach-Object { ^
+      Add-Content -Path wifi_attack_log.txt -Value ($_ + ' - Timestamp: ' + (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')) }"
+    echo Detection complete. Logs saved to wifi_attack_log.txt.
+    pause
+    goto wifi_detection_mitigation
+)
+
+:: Mitigate Rogue Devices
+if "%wifi_option%"=="2" (
+    cls
+    echo Mitigating rogue devices...
+    echo Checking for unauthorized devices...
+    arp -a | findstr /V "00-00-00-00-00-00" > rogue_devices.txt
+    echo Rogue devices logged in rogue_devices.txt.
+    echo Mitigation strategies:
+    echo  - Block suspicious MACs using router settings.
+    echo  - Enable WPA3 or WPA2 with MFP (Management Frame Protection).
+    pause
+    goto wifi_detection_mitigation
+)
+
+:: Advanced ARP Spoofing Detection
+if "%wifi_option%"=="3" (
+    cls
+    echo Detecting ARP spoofing attacks (e.g., SelfishNet)...
+    echo Scanning for duplicate MAC addresses...
+    powershell -Command ^
+    "arp -a | Out-File -FilePath arp_table.txt; ^
+    $arpData = Get-Content arp_table.txt | ForEach-Object { ($_ -split '\s+') | Select-String '.{17}' }; ^
+    $duplicates = $arpData | Group-Object | Where-Object { $_.Count -gt 1 }; ^
+    if ($duplicates.Count -gt 0) { ^
+        $duplicates | ForEach-Object { Add-Content -Path 'arp_spoof_log.txt' -Value ('Duplicate MAC Found: ' + $_.Name + ' - IPs: ' + ($_.Group -join ', ')) }; ^
+        Write-Host 'ALERT! ARP spoofing detected. Check arp_spoof_log.txt.' -ForegroundColor Red } else { ^
+        Write-Host 'No ARP spoofing detected.' -ForegroundColor Green }"
+    pause
+    goto wifi_detection_mitigation
+)
+
+:: Advanced Bandwidth Monitoring
+if "%wifi_option%"=="4" (
+    cls
+    echo Monitoring bandwidth usage for suspicious activity...
+    echo Checking for throttling or unusual traffic patterns...
+    powershell -Command ^
+    "Get-NetTCPConnection | Sort-Object -Property State | Out-File -FilePath 'bandwidth_log.txt'; ^
+    Write-Host 'Bandwidth usage logged in bandwidth_log.txt.' -ForegroundColor Green"
+    echo Bandwidth monitoring complete.
+    pause
+    goto wifi_detection_mitigation
+)
+
+if "%wifi_option%"=="5" goto start

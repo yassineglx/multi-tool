@@ -133,14 +133,7 @@ Select from the following options:
 ## 🛡️ **Disclaimer**
 This toolkit is for **educational and ethical purposes only**. Unauthorized use is prohibited and may violate local laws or regulations. Always obtain proper permissions before testing any network.
 
----
 
-## 📬 **Support**
-- **Issues**: Report issues or request features via the GitHub [Issues](https://github.com/your-repo/issues) page.
-- **Email**: support@example.com
-- **Documentation**: [Project Docs](https://example.com/docs) (replace with your link).
-
----
 
 ## ⭐ **Contribute**
 Contributions are welcome! Please fork this repository, create a feature branch, and submit a pull request.

